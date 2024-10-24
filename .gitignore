@@ -1,0 +1,15 @@
+.env
+accounts.db
+note.txt
+bin/
+include/
+lib/
+lib64/
+share/
+models/
+
+pyvenv.cfg
+__pycache__/
+others.ipynb
+test.ipynb
+exemple.ipynb
