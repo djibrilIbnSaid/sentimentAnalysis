@@ -6,7 +6,7 @@ SentimentAnalysis est un projet en Python qui analyse les sentiments exprimés d
 ## Installation
 1. Clonez le dépôt :
     ```bash
-    git clone https://github.com/votre-utilisateur/SentimentAnalysis.git
+    git clone https://github.com/djibrilIbnSaid/sentimentAnalysis.git
     ```
 2. Accédez au répertoire du projet :
     ```bash
