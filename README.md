@@ -24,6 +24,9 @@ SentimentAnalysis est un projet en Python qui analyse les sentiments exprimés d
     ```bash
     pip install -r requirements.txt
     ```
+5. Autres dependances :
+    - installer ollama: https://ollama.com
+    - bash: `ollama run llama3.2`
 
 ## Utilisation
 1. Exécutez le script d'analyse :
