@@ -13,9 +13,9 @@ class DatasetPreparatorAgent:
     def invoke(self, state):
         # Charger le dataset
         df = pd.read_csv(state['data'])
-        pos_data = df[df['sentiment'] == 1]
-        neu_data = df[df['sentiment'] == 0]
-        neg_data = df[df['sentiment'] == -1]
+        pos_data = df[df['sentiment'] == 1] # positif
+        neu_data = df[df['sentiment'] == 0] # neutre
+        neg_data = df[df['sentiment'] == -1] # négatif
         dataset = pd.concat([pos_data, neu_data, neg_data])
 
         # On ne traite que le cas des tweets en français
