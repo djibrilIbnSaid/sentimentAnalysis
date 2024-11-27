@@ -1,4 +1,4 @@
-.env
+.venv
 accounts.db
 note.txt
 bin/
@@ -7,7 +7,7 @@ lib/
 lib64/
 share/
 models/
-
+credentials/*
 pyvenv.cfg
 __pycache__/
 others.ipynb
