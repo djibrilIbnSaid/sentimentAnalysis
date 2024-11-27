@@ -13,3 +13,6 @@ __pycache__/
 others.ipynb
 test.ipynb
 exemple.ipynb
+data/.DS_Store
+data/*.csv
+data/*.json

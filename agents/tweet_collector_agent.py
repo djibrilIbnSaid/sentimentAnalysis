@@ -14,7 +14,9 @@ class TweetCollectorAgent:
         self.query = state["data"]
         
         # simulation de la collecte de tweets
-        data = pd.read_csv("tweets_dataset.csv")
+        data = pd.read_json("tweets.json")
+        data['tweet'] = data[['tweet_content']]
+        data.drop(columns=['tweet_content'], inplace=True)
         data.to_csv('tweets.csv', index=False)
         # fin de la simulation
         
