@@ -46,7 +46,7 @@ Ce projet est sous licence MIT. Voir le fichier [LICENSE](LICENSE) pour plus de 
 ## Auteurs
 - Abdoulaye Djibril DIALLO
 - Salma KHALLAD
-- Alexendre ARNAUD
+- Alexandre ARNAUD
 - Ayoub HIDARA
 
 ## Remerciements

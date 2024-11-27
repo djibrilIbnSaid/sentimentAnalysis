@@ -17,9 +17,9 @@ class DataCleaningAgent:
             return text
         
         df['tweet'] = df['tweet'].apply(clean_text)
-        df.to_csv('tweets_dataset_clean.csv', index=False)
+        df.to_csv('tweets_precleaned.csv', index=False)
         return {
             "messages": state["messages"] + [HumanMessage(content=f"Action effectuée par l'agent {self.name}")],
-            "data": 'tweets_dataset_clean.csv',
+            "data": 'tweets_precleaned.csv',
             "context": state.get("context", {})
         }

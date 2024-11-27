@@ -13,7 +13,7 @@ class LabelingAgent:
     def get_sentiment_langchain(self, text):
         prompt_template = PromptTemplate(
             input_variables=["text", "query"],
-            template="By reading the following tweet, determine if it conveys a POSITIVE, NEGATIVE, or NEUTRAL attitude in the context of {query}. Respond with only one of these three options nothing else. Here is the tweet: {text}"
+            template="By reading the following tweet, determine if it conveys a POSITIVE (1), NEGATIVE (-1), or NEUTRAL (0) attitude in the context of {query}. Respond with only one of these three options integer encoding, nothing else (-1, 0, or 1). Here is the tweet: {text}"
         )
         
         print(f"Query: {self.query}")
@@ -27,7 +27,7 @@ class LabelingAgent:
     def invoke(self, state):
         self.query = state["context"]
         data = pd.read_csv(state['data'])
-        data['sentiment'] = data['tweet'].apply(self.get_sentiment_langchain)
+        data['sentiment'] = int(data['tweet'].apply(self.get_sentiment_langchain))
         data.to_csv('tweets_labeled.csv', index=False)
         return {
             "messages": state["messages"] + [HumanMessage(content=f"Action effectuée par l'agent {self.name}")],
