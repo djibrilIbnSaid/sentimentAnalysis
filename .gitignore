@@ -1,6 +1,7 @@
 .venv
 accounts.db
 note.txt
+test.txt
 bin/
 include/
 lib/
