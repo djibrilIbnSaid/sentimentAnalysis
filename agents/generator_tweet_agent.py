@@ -41,19 +41,24 @@ class GeneratorTweetAgent:
         prompt_template = PromptTemplate(
             input_variables=["context", "category", "lang"],
             template=(
-                "Generate a tweet of up to 280 characters in a {tone} tone in {lang}. "
+                "Generate a tweet of up to 280 characters in a {category} tone. "
                 "The tweet must be clear, concise, relevant, and aligned with the following context:\n\n"
                 "Context: {context}\n\n"
                 "Ensure that the tweet accurately reflects the requested tone (positive, negative, or neutral) "
                 "and remains engaging without exceeding the character limit."
+                "Language: {lang}"
+                "Example: 'This product is amazing, I love it!'"
+                "Example: 'Very bad service, I am disappointed.'"
+                "In the context of {context}, generate a tweet in a {category} tone in {lang}."
             )
         )
         
         tweets = []
         for categorie, nombre in resultats.items():
             for _ in range(nombre):
-                prompt = prompt_template.format(context=context, tone=categorie)
+                prompt = prompt_template.format(context=context, category=categorie, lang=lang)
                 tweet = self.llm(prompt)
+                print(f"Tweet généré ({categorie}): {tweet}")
                 tweets.append({"tweet": tweet, "sentiment": categorie})
         
         # enregistrer les tweets générés dans un fichier CSV

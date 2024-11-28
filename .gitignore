@@ -1,13 +1,14 @@
-.env
+.venv
 accounts.db
 note.txt
+test.txt
 bin/
 include/
 lib/
 lib64/
 share/
 models/
-
+credentials/*
 pyvenv.cfg
 __pycache__/
 others.ipynb
@@ -16,3 +17,4 @@ exemple.ipynb
 data/.DS_Store
 data/*.csv
 data/*.json
+.env

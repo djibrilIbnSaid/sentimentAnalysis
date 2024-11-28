@@ -14,6 +14,6 @@ class HumanAgent:
             "messages": [
                 HumanMessage(content=f"Context provided by human:")
             ],
-            "data": "",
+            "data": "data/tweets_labeled.csv", # a remplacer par une chaine vide
             "context": text
         }

@@ -30,6 +30,20 @@ SentimentAnalysis est un projet en Python qui analyse les sentiments exprimés d
         - navigateur: http://localhost:11434
     - bash: `ollama pull llama3.2` pour telecharger le modèle llama3.2
 
+## Configuration des Identifiants Twitter
+
+Pour utiliser l'agent `TweetCollectorAgent`, vous devez fournir vos identifiants de connexion Twitter dans un fichier Python. Suivez les étapes ci-dessous pour configurer vos identifiants :
+
+### Étape 1 : Créer le fichier `.env`
+   ```bash
+   # .env
+
+   TWITTER_USERNAME=....          # Votre nom d'utilisateur Twitter
+    TWITTER_ACCOUNT_PASSWORD=...  # Le mot de passe associé à votre compte Twitter
+    TWITTER_EMAIL=...           # L'adresse email liée à votre compte Twitter
+    TWITTER_EMAIL_PASSWORD=...  
+
+
 ## Utilisation
 1. Exécutez le script d'analyse :
     ```bash
