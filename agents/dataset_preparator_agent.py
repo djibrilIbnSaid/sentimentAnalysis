@@ -13,6 +13,12 @@ class DatasetPreparatorAgent:
     def invoke(self, state):
         # Charger le dataset
         df = pd.read_csv(state['data'])
+        # Remplacer les valeurs directement
+        df['sentiment'] = df['sentiment'].replace({
+            'POSITIVE': 1,
+            'NEUTRAL': 0,
+            'NEGATIVE': -1
+        })
         pos_data = df[df['sentiment'] == 1] # positif
         neu_data = df[df['sentiment'] == 0] # neutre
         neg_data = df[df['sentiment'] == -1] # négatif
