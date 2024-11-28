@@ -63,16 +63,18 @@ class GeneratorTweetAgent:
         
         # enregistrer les tweets générés dans un fichier CSV
         df_generated = pd.DataFrame(tweets)
-        df_generated.to_csv('tweets_generated.csv', index=False)
-        return tweets
+        df_generated.to_csv('data/tweets_generated.csv', index=False)
+        df = pd.concat([df, df_generated])
+        df.to_csv('data/tweets_dataset.csv', index=False)
+        return 'data/tweets_dataset.csv'
     
     def invoke(self, state):
         self.query = state["context"]
         print(f"Contexte: {self.query}")
         print(f"Dataset: {state['data']}")
-        tweets = self._generate_tweet(self.query, state['data'])
+        path_tweet = self._generate_tweet(self.query, state['data'])
         return {
             "messages": state["messages"] + [HumanMessage(content=f"Action effectuée par l'agent {self.name}")],
-            "data": tweets,
+            "data": path_tweet,
             "context": state.get("context", {})
         }
