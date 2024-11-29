@@ -1,20 +1,24 @@
+from langchain_core.messages import HumanMessage
+
 import pandas as pd
 import numpy as np
+import re
+import string
+from nltk.corpus import stopwords # nltk.download('stopwords') si non téléchargé
+from nltk.tokenize import RegexpTokenizer
 import matplotlib.pyplot as plt
-from sklearn.metrics import classification_report, confusion_matrix
+from tensorflow.keras.preprocessing.sequence import pad_sequences
 from tensorflow.keras.preprocessing.text import Tokenizer
+from tensorflow.keras.layers import Dense, Embedding, Conv1D, GlobalMaxPooling1D, Dropout, BatchNormalization, ReLU ,Concatenate,Input
+from tensorflow.keras.models import Sequential,Model
 from tensorflow.keras.optimizers import Adamax
+from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.metrics import Precision, Recall
-from tensorflow.keras.layers import Dense, ReLU
-from tensorflow.keras.layers import Embedding, BatchNormalization, Concatenate
-from tensorflow.keras.layers import Conv1D, GlobalMaxPooling1D, Dropout
-from tensorflow.keras.models import Sequential, Model
+from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from keras.utils import to_categorical
-from langchain_core.messages import HumanMessage
-from sklearn.model_selection import train_test_split
-from sklearn.utils.class_weight import compute_class_weight
+import pandas as pd
 
 class ClassifierAgent:
 
@@ -31,6 +35,86 @@ class ClassifierAgent:
                     f"La classe '{label}' est sous-représentée ({proportion:.2%}).\n"
                 )
         return imbalance_message if imbalance_message else None
+    
+    def main_pipeline(X,y):
+
+        # Diviser les données
+        X_train, X_temp, y_train, y_temp = train_test_split(X, y, test_size=0.3, random_state=42)
+        X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.5, random_state=42)
+
+        # Label Encoding and One-Hot Encoding
+        encoder = LabelEncoder()
+        y_train = encoder.fit_transform(y_train)
+        y_val = encoder.transform(y_val)
+        y_test = encoder.transform(y_test)
+
+        # One-hot encoding
+        y_train = to_categorical(y_train, num_classes=3)
+        y_val = to_categorical(y_val, num_classes=3)
+        y_test = to_categorical(y_test, num_classes=3)
+
+        # Tokenisation et padding
+        max_words = 10000
+        max_len = 500
+        tokenizer = Tokenizer(num_words=max_words)
+
+        X_train = np.array(pd.Series(X_train).fillna("").tolist())
+        X_val = np.array(pd.Series(X_val).fillna("").tolist())
+        X_test = np.array(pd.Series(X_test).fillna("").tolist())
+
+        tokenizer.fit_on_texts(X_train)
+
+        train_x_padded = pad_sequences(tokenizer.texts_to_sequences(X_train), maxlen=max_len, padding='post')
+        val_x_padded = pad_sequences(tokenizer.texts_to_sequences(X_val), maxlen=max_len)
+        test_x_padded = pad_sequences(tokenizer.texts_to_sequences(X_test), maxlen=max_len)
+
+        # Modèle
+        input_layer = Input(shape=(max_len,))
+        branch1 = Embedding(input_dim=max_words, output_dim=100, input_length=max_len)(input_layer)
+        branch1 = Conv1D(64, 3, padding='same', activation='relu')(branch1)
+        branch1 = BatchNormalization()(branch1)
+        branch1 = ReLU()(branch1)
+        branch1 = Dropout(0.5)(branch1)
+        branch1 = GlobalMaxPooling1D()(branch1)
+
+        branch2 = Embedding(input_dim=max_words, output_dim=100, input_length=max_len)(input_layer)
+        branch2 = Conv1D(64, 3, padding='same', activation='relu')(branch2)
+        branch2 = BatchNormalization()(branch2)
+        branch2 = ReLU()(branch2)
+        branch2 = Dropout(0.5)(branch2)
+        branch2 = GlobalMaxPooling1D()(branch2)
+
+        concatenated = Concatenate()([branch1, branch2])
+        hid_layer = Dense(128, activation='relu')(concatenated)
+        dropout = Dropout(0.3)(hid_layer)
+        output_layer = Dense(3, activation='softmax')(dropout)
+
+        model = Model(inputs=input_layer, outputs=output_layer)
+        model.compile(optimizer='adamax', loss='categorical_crossentropy', metrics=['accuracy', Precision(), Recall()])
+
+        model.summary()
+
+        # Entraînement
+        early_stopping = EarlyStopping(monitor='val_loss', patience=3, restore_best_weights=True)
+        history = model.fit(
+            train_x_padded, y_train,
+            epochs=10,
+            batch_size=8,
+            validation_data=(val_x_padded, y_val),
+            callbacks=[early_stopping]
+        )
+
+        # Évaluation
+        loss, accuracy, precision, recall = model.evaluate(test_x_padded, y_test)
+        print(f"Loss: {loss:.2f}, Accuracy: {accuracy:.2f}, Precision: {precision:.2f}, Recall: {recall:.2f}")
+
+        # Sauvegarde du modèle
+        model.save('tweet_classifier.h5')
+        print("Modèle sauvegardé dans 'tweet_classifier.h5'.")
+
+        # Tracer les métriques
+        return history
+        
 
     def invoke(self, state):
         # Charger les données pré-traitées
@@ -58,105 +142,12 @@ class ClassifierAgent:
                 "context": state.get("context", {})
             }
 
-        # Encodage des labels
-        encoder = LabelEncoder()
-        y = encoder.fit_transform(y)
-
-        # Diviser les données en Train, Validation, Test
-        X_train, X_temp, y_train, y_temp = train_test_split(X, y, test_size=0.3, random_state=42)
-        X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.5, random_state=42)
-
-        # Tokenisation et padding
-        tokenizer = Tokenizer(num_words=10000, oov_token="<OOV>")
-        tokenizer.fit_on_texts(X_train)
-        X_train_seq = pad_sequences(tokenizer.texts_to_sequences(X_train), maxlen=100)
-        X_val_seq = pad_sequences(tokenizer.texts_to_sequences(X_val), maxlen=100)
-        X_test_seq = pad_sequences(tokenizer.texts_to_sequences(X_test), maxlen=100)
-
-        # Détection et équilibrage des classes si nécessaire
-        class_weights = compute_class_weight('balanced', classes=np.unique(y_train), y=y_train)
-        class_weight_dict = dict(enumerate(class_weights))
-
-        max_words = 10000
-        embedding_dim = 32
-        max_len = 100  # Longueur du texte après padding
-
-        # Branch 1
-        branch1 = Sequential()
-        branch1.add(Embedding(max_words, embedding_dim, input_length=max_len))
-        branch1.add(Conv1D(64, 3, padding='same', activation='relu'))
-        branch1.add(BatchNormalization())
-        branch1.add(ReLU())
-        branch1.add(Dropout(0.5))
-        branch1.add(GlobalMaxPooling1D())
-
-        # Branch 2
-        branch2 = Sequential()
-        branch2.add(Embedding(max_words, embedding_dim, input_length=max_len))
-        branch2.add(Conv1D(64, 3, padding='same', activation='relu'))
-        branch2.add(BatchNormalization())
-        branch2.add(ReLU())
-        branch2.add(Dropout(0.5))
-        branch2.add(GlobalMaxPooling1D())
-
-        concatenated = Concatenate()([branch1.output, branch2.output])
-
-        hid_layer = Dense(128, activation='relu')(concatenated)
-        dropout = Dropout(0.3)(hid_layer)
-        output_layer = Dense(3, activation='softmax')(dropout)  # 3 classes
-
-        model = Model(inputs=[branch1.input, branch2.input], outputs=output_layer)
-
-        # Compiler le modèle
-        model.compile(optimizer=Adamax(learning_rate=0.001),
-                      loss='sparse_categorical_crossentropy',
-                      metrics=['accuracy', Precision(), Recall()])
-
-        # Entraînement du modèle
-        batch_size = 256
-        epochs = 25
-        history = model.fit([X_train_seq, X_train_seq], y_train, epochs=epochs, batch_size=batch_size,
-                            validation_data=([X_val_seq, X_val_seq], y_val), class_weight=class_weight_dict)
-
-        # Évaluation du modèle
-        (loss, accuracy, precision, recall) = model.evaluate([X_train_seq, X_train_seq], y_train)
-        print(f'Loss: {round(loss, 2)}, Accuracy: {round(accuracy, 2)}, Precision: {round(precision, 2)}, Recall: {round(recall, 2)}')
-
-        (loss, accuracy, precision, recall) = model.evaluate([X_test_seq, X_test_seq], y_test)
-        print(f'Loss: {round(loss, 2)}, Accuracy: {round(accuracy, 2)}, Precision: {round(precision, 2)}, Recall: {round(recall, 2)}')
-
-        # Sauvegarder le modèle
-        model.save('model.h5')
-
-        # Visualisation des résultats d'entraînement
-        plt.figure(figsize=(20, 12))
-        plt.style.use('fivethirtyeight')
-
-        # Loss graph
-        plt.subplot(2, 2, 1)
-        plt.plot(history.history['loss'], label='Training loss')
-        plt.plot(history.history['val_loss'], label='Validation loss')
-        plt.title('Training and Validation Loss')
-        plt.xlabel('Epochs')
-        plt.ylabel('Loss')
-        plt.legend()
-
-        # Accuracy graph
-        plt.subplot(2, 2, 2)
-        plt.plot(history.history['accuracy'], label='Training Accuracy')
-        plt.plot(history.history['val_accuracy'], label='Validation Accuracy')
-        plt.title('Training and Validation Accuracy')
-        plt.xlabel('Epochs')
-        plt.ylabel('Accuracy')
-        plt.legend()
-
-        plt.suptitle('Model Training Metrics', fontsize=16)
-        plt.show()
+        history = self.main_pipeline(X,y)
 
         return {
             "messages": state["messages"] + [
                 HumanMessage(content=f"Action effectuée par l'agent {self.name}. Le modèle ANN est prêt et sauvegardé.")
             ],
-            "data": state["data"],
+            "data": history,
             "context": state.get("context", {})
         }
