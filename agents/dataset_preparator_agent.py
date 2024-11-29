@@ -5,6 +5,7 @@ import nltk
 from nltk.corpus import stopwords # nltk.download('stopwords') si non téléchargé
 from nltk.tokenize import RegexpTokenizer
 import string
+nltk.download('wordnet')
 
 class DatasetPreparatorAgent:
     def __init__(self):
@@ -15,13 +16,13 @@ class DatasetPreparatorAgent:
         df = pd.read_csv(state['data'])
         # Remplacer les valeurs directement
         df['sentiment'] = df['sentiment'].replace({
-            'POSITIVE': 1,
-            'NEUTRAL': 0,
-            'NEGATIVE': -1
+            'POSITIVE': '1',
+            'NEUTRAL': '0',
+            'NEGATIVE': '-1'
         })
-        pos_data = df[df['sentiment'] == 1] # positif
-        neu_data = df[df['sentiment'] == 0] # neutre
-        neg_data = df[df['sentiment'] == -1] # négatif
+        pos_data = df[df['sentiment'] == '1'] # positif
+        neu_data = df[df['sentiment'] == '0'] # neutre
+        neg_data = df[df['sentiment'] == '-1'] # négatif
         dataset = pd.concat([pos_data, neu_data, neg_data])
 
         # On ne traite que le cas des tweets en français
@@ -68,10 +69,10 @@ class DatasetPreparatorAgent:
         # Fonction pour lemmatizer le texte
         def lemmatizer_on_text(data):
             text = [lm.lemmatize(word) for word in data]
-            return data
+            return text
         dataset['tweet'] = dataset['tweet'].apply(lambda x: lemmatizer_on_text(x))
 
-        df.to_csv('tweets_dataset.csv', index=False)
+        df.to_csv('data/tweets_dataset.csv', index=False)
         return {
             "messages": state["messages"] + [HumanMessage(content=f"Action effectuée par l'agent {self.name}")],
             "data": 'data/tweets_dataset.csv',

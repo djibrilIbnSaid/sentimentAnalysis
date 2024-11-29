@@ -36,7 +36,7 @@ class ClassifierAgent:
                 )
         return imbalance_message if imbalance_message else None
     
-    def main_pipeline(X,y):
+    def main_pipeline(self, X,y):
 
         # Diviser les données
         X_train, X_temp, y_train, y_temp = train_test_split(X, y, test_size=0.3, random_state=42)

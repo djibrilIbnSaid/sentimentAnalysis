@@ -6,6 +6,8 @@ from langchain_core.messages import HumanMessage
 from twscrape import API, gather
 from twscrape.logger import set_log_level
 from dotenv import load_dotenv
+import nest_asyncio
+nest_asyncio.apply()
 
 load_dotenv()
 
@@ -123,18 +125,18 @@ class TweetCollectorAgent:
                 raise ValueError("Query not provided in state.")
 
             # Check if an event loop is already running
-            try:
-                loop = asyncio.get_running_loop()
-            except RuntimeError:
-                loop = None
+            # try:
+            #     loop = asyncio.get_running_loop()
+            # except RuntimeError:
+            #     loop = None
 
-            if loop:
-                # Event loop is already running
-                task = loop.create_task(self.crawl_tweets())
-                loop.run_until_complete(task)
-            else:
-                # No running event loop, safe to use asyncio.run()
-                asyncio.run(self.crawl_tweets())
+            # if loop:
+            #     # Event loop is already running
+            #     task = loop.create_task(self.crawl_tweets())
+            #     loop.run_until_complete(task)
+            # else:
+            #     # No running event loop, safe to use asyncio.run()
+            #     asyncio.run(self.crawl_tweets())
 
             # Return the state with the new message and data path
             return {
