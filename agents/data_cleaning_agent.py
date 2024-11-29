@@ -8,6 +8,12 @@ class DataCleaningAgent:
         
     def invoke(self, state):
         df = pd.read_json(state['data'])
+        if df.shape[0] == 0:
+            return {
+                "messages": state["messages"] + [HumanMessage(content=f"Le dataset est vide")],
+                "data": state['data'],
+                "context": state.get("context", {})
+            }
         df = df[['tweet_content']]
         print(df.head())
         def clean_text(text):

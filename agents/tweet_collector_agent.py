@@ -26,6 +26,7 @@ class TweetCollectorAgent:
     async def setup_accounts(self):
         try:
             # Add accounts and log in
+            # await self.api.pool.delete_accounts(username)
             await self.api.pool.add_account(username, account_password, email, password)
             await self.api.pool.login_all()
             print(f"Accounts setup successfully")
@@ -146,6 +147,6 @@ class TweetCollectorAgent:
             print(f"Error in invoking agent: {e}")
             return {
                 "messages": state["messages"] + [HumanMessage(content=f"Erreur: {e}")],
-                "data": None,
+                "data": self.output_file,
                 "context": state.get("context", {})
             }
