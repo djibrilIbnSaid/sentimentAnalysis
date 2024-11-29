@@ -8,7 +8,8 @@ class GeneratorTweetAgent:
     def __init__(self):
         self.llm = OllamaLLM(model="llama3.2", verbose=False)
         self.name = 'GeneratorTweetAgent'
-        self.query = None
+       
+       
     
     def _calculer_tweets_a_generer(self, categories):
         """

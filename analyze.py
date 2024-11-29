@@ -5,7 +5,7 @@ from agents.human_agent import HumanAgent
 from agents.labeling_agent import LabelingAgent
 from agents.tweet_collector_agent import TweetCollectorAgent
 from agents.generator_tweet_agent import GeneratorTweetAgent
-from agents.model_agent import ModelAgent
+# from agents.model_agent import ModelAgent
 
 from langgraph.graph import StateGraph, START
 from agents.supervisor_agent import SupervisorAgent
@@ -20,13 +20,13 @@ class AgentState(TypedDict):
     data: dict
     context: str
 
-members = ["Human", "TweetCollector", "DataCleaner", "Labeler", "Generator", "Modeling"]
+members = ["Human", "TweetCollector", "DataCleaner", "Labeler", "Generator"]
 
 tweet_collector = TweetCollectorAgent()
 data_cleaner = DataCleaningAgent()
 labeler = LabelingAgent()
 human_agent = HumanAgent()
-modeling = ModelAgent(lang='french')
+# modeling = ModelAgent(lang='french')
 generator = GeneratorTweetAgent()
 supervisor = SupervisorAgent(members)
 
@@ -35,7 +35,7 @@ tweet_collector_node = functools.partial(SupervisorAgent.agent_node, agent=tweet
 data_cleaner_node = functools.partial(SupervisorAgent.agent_node, agent=data_cleaner, name="DataCleaner")
 labeler_node = functools.partial(SupervisorAgent.agent_node, agent=labeler, name="Labeler")
 generator_node = functools.partial(SupervisorAgent.agent_node, agent=generator, name="Generator")
-modeling_node = functools.partial(SupervisorAgent.agent_node, agent=modeling, name="Modeling")
+# modeling_node = functools.partial(SupervisorAgent.agent_node, agent=modeling, name="Modeling")
 
 workflow = StateGraph(AgentState)
 workflow.add_node("Human", human_node)
@@ -43,7 +43,7 @@ workflow.add_node("TweetCollector", tweet_collector_node)
 workflow.add_node("DataCleaner", data_cleaner_node)
 workflow.add_node("Labeler", labeler_node)
 workflow.add_node("Generator", generator_node)
-workflow.add_node("Modeling", modeling_node)
+# workflow.add_node("Modeling", msodeling_node)
 workflow.add_node("supervisor", supervisor.supervisor_agent)
 
 # Ajout des arêtes entre agents et le superviseur

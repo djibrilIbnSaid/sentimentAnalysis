@@ -38,7 +38,7 @@ Pour utiliser l'agent `TweetCollectorAgent`, vous devez fournir vos identifiants
    ```bash
    # .env
 
-   TWITTER_USERNAME=....          # Votre nom d'utilisateur Twitter
+    TWITTER_USERNAME=....          # Votre nom d'utilisateur Twitter
     TWITTER_ACCOUNT_PASSWORD=...  # Le mot de passe associé à votre compte Twitter
     TWITTER_EMAIL=...           # L'adresse email liée à votre compte Twitter
     TWITTER_EMAIL_PASSWORD=...  
