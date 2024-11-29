@@ -18,3 +18,4 @@ data/.DS_Store
 data/*.csv
 data/*.json
 .env
+data/tweet_classifier.h5

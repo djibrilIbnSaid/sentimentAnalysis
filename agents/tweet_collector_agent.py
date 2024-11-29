@@ -17,7 +17,7 @@ email = os.getenv("TWITTER_EMAIL")
 password = os.getenv("TWITTER_EMAIL_PASSWORD")
 
 class TweetCollectorAgent:
-    def __init__(self, mode='term', number=5, output_file='data/tweets.json'):
+    def __init__(self, mode='term', number=100, output_file='data/tweets.json'):
         self.name = 'TweetCollectorAgent'
         self.mode = mode
         self.number = number
@@ -125,18 +125,18 @@ class TweetCollectorAgent:
                 raise ValueError("Query not provided in state.")
 
             # Check if an event loop is already running
-            # try:
-            #     loop = asyncio.get_running_loop()
-            # except RuntimeError:
-            #     loop = None
+            try:
+                loop = asyncio.get_running_loop()
+            except RuntimeError:
+                loop = None
 
-            # if loop:
-            #     # Event loop is already running
-            #     task = loop.create_task(self.crawl_tweets())
-            #     loop.run_until_complete(task)
-            # else:
-            #     # No running event loop, safe to use asyncio.run()
-            #     asyncio.run(self.crawl_tweets())
+            if loop:
+                # Event loop is already running
+                task = loop.create_task(self.crawl_tweets())
+                loop.run_until_complete(task)
+            else:
+                # No running event loop, safe to use asyncio.run()
+                asyncio.run(self.crawl_tweets())
 
             # Return the state with the new message and data path
             return {

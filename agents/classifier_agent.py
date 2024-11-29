@@ -4,6 +4,9 @@ import pandas as pd
 import numpy as np
 import re
 import string
+import nltk
+nltk.download('wordnet')
+nltk.download('omw-1.4')
 from nltk.corpus import stopwords # nltk.download('stopwords') si non téléchargé
 from nltk.tokenize import RegexpTokenizer
 import matplotlib.pyplot as plt
@@ -20,10 +23,69 @@ from tensorflow.keras.preprocessing.sequence import pad_sequences
 from keras.utils import to_categorical
 import pandas as pd
 
+import nltk
+nltk.download('wordnet')
+nltk.download('omw-1.4')
+
 class ClassifierAgent:
 
     def __init__(self):
         self.name = 'ClassifierAgent'
+
+    def clean_and_prepare_data(self,file_path):
+        df = pd.read_csv(file_path)
+        df['sentiment'] = df['sentiment'].replace({
+            'POSITIVE': 1,
+            'NEUTRAL': 0,
+            'NEGATIVE': -1
+        })
+        pos_data = df[df['sentiment'] == 1] # positif
+        neu_data = df[df['sentiment'] == 0] # neutre
+        neg_data = df[df['sentiment'] == -1] # négatif
+        dataset = pd.concat([pos_data, neu_data, neg_data])
+        # On ne traite que le cas des tweets en français
+        stops = set(stopwords.words('french'))
+        # Fonction pour nettoyer les stopwords
+        def cleaning_stopwords(text):
+            return " ".join([word for word in str(text).split() if word not in stops])
+        dataset['tweet'] = dataset['tweet'].apply(lambda text: cleaning_stopwords(text))
+        punctuations = string.punctuation
+        # Fonction pour nettoyer la ponctuation
+        def cleaning_punctuations(text):
+            translator = str.maketrans('', '', punctuations)
+            return text.translate(translator)
+        dataset['tweet']= dataset['tweet'].apply(lambda x: cleaning_punctuations(x))
+        # Fonction pour nettoyer les caractères répétitifs
+        def cleaning_repeating_char(text):
+            return re.sub(r'(.)1+', r'1', text)
+        dataset['tweet'] = dataset['tweet'].apply(lambda x: cleaning_repeating_char(x))
+
+        # Fonction pour nettoyer les URLs (peut être déjà fait dans l'agent avant la labélisation)
+        def cleaning_URLs(data):
+            return re.sub('((www.[^s]+)|(https?://[^s]+))',' ',data)
+        dataset['tweet'] = dataset['tweet'].apply(lambda x: cleaning_URLs(x))
+        # Fonction pour nettoyer les chiffres
+        def cleaning_numbers(data):
+            return re.sub('[0-9]+', '', data)
+        dataset['tweet'] = dataset['tweet'].apply(lambda x: cleaning_numbers(x))
+        # Fonction pour tokeniser le texte
+        tokenizer = RegexpTokenizer(r'\w+')
+        dataset['tweet'] = dataset['tweet'].apply(tokenizer.tokenize)
+        st = nltk.PorterStemmer()
+        # Fonction pour stemmer le texte
+        def stemming_on_text(data):
+            text = [st.stem(word) for word in data]
+            return text
+        dataset['tweet']= dataset['tweet'].apply(lambda x: stemming_on_text(x))
+        lm = nltk.WordNetLemmatizer()
+        # Fonction pour lemmatizer le texte
+        def lemmatizer_on_text(data):
+            text = [lm.lemmatize(word) for word in data]
+            return text
+        dataset['tweet'] = dataset['tweet'].apply(lambda x: lemmatizer_on_text(x))
+        X = df['tweet'].values
+        y = np.array([label + 1 for label in df['sentiment'].values])  # Convertir -1, 0, 1 en 0, 1, 2
+        return X, y
 
     def detect_imbalance(self, y, threshold=0.2):
         """Détecter les déséquilibres dans les données."""
@@ -36,11 +98,12 @@ class ClassifierAgent:
                 )
         return imbalance_message if imbalance_message else None
     
-    def main_pipeline(self, X,y):
+    def main_pipeline(self,X,y):
 
         # Diviser les données
         X_train, X_temp, y_train, y_temp = train_test_split(X, y, test_size=0.3, random_state=42)
         X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.5, random_state=42)
+        
 
         # Label Encoding and One-Hot Encoding
         encoder = LabelEncoder()
@@ -107,26 +170,24 @@ class ClassifierAgent:
         # Évaluation
         loss, accuracy, precision, recall = model.evaluate(test_x_padded, y_test)
         print(f"Loss: {loss:.2f}, Accuracy: {accuracy:.2f}, Precision: {precision:.2f}, Recall: {recall:.2f}")
+        import pickle
+
+        tokenizer_path = 'data/tokenizer.pkl'
+        model_path = 'data/tweet_classifier.h5'
+        with open(tokenizer_path, 'wb') as tokenizer_file:
+            pickle.dump(tokenizer, tokenizer_file)
 
         # Sauvegarde du modèle
-        model.save('tweet_classifier.h5')
+        model.save(model_path)
         print("Modèle sauvegardé dans 'tweet_classifier.h5'.")
 
         # Tracer les métriques
-        return history
+        return model_path , tokenizer_path
         
 
     def invoke(self, state):
-        # Charger les données pré-traitées
-        df = pd.read_csv(state['data'])
-
-        # Vérifier les colonnes
-        if df.shape[1] < 2:
-            raise ValueError("Les données doivent avoir au moins deux colonnes : texte et label.")
         
-        X = df.iloc[:, 0].values  # Texte pré-traité
-        y = df.iloc[:, 1].values  # Labels
-
+        X,y = self.clean_and_prepare_data(state["data"])
         # Détection de déséquilibres
         imbalance_message = self.detect_imbalance(y, threshold=0.2)
         if imbalance_message:
@@ -142,12 +203,13 @@ class ClassifierAgent:
                 "context": state.get("context", {})
             }
 
-        history = self.main_pipeline(X,y)
+        model_path,tokenizer_path = self.main_pipeline(X,y)
 
         return {
             "messages": state["messages"] + [
                 HumanMessage(content=f"Action effectuée par l'agent {self.name}. Le modèle ANN est prêt et sauvegardé.")
             ],
-            "data": history,
-            "context": state.get("context", {})
+            "data" : "",
+            "context": {'model_path':model_path,
+                        'tokenizer_path':tokenizer_path}
         }
