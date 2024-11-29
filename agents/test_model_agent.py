@@ -44,7 +44,7 @@ class TestModelAgent:
                 break
             prediction = predict(tweet, model_path, tokenizer_path)
             
-            print(f"Le sentiment du tweet est: {emotions[prediction.index(max(prediction))]}")
+            print(f"Le sentiment du tweet est: {emotions[prediction.index(max(prediction))-1]}")
         
         return {
             "messages": [
