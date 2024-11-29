@@ -27,10 +27,17 @@ class LabelingAgent:
     def invoke(self, state):
         self.query = state["context"]
         data = pd.read_csv(state['data'])
-        data['sentiment'] = data['tweet'].apply(self.get_sentiment_langchain)
-        data.to_csv('data/tweets_labeled.csv', index=False)
-        return {
-            "messages": state["messages"] + [HumanMessage(content=f"Action effectuée par l'agent {self.name}")],
-            "data": 'data/tweets_labeled.csv',
-            "context": state.get("context", {})
-        }
+        if data.shape[0] == 0:
+            return {
+                "messages": state["messages"] + [HumanMessage(content=f"Le dataset est vide")],
+                "data": state['data'],
+                "context": state.get("context", {})
+            }
+        else:
+            data['sentiment'] = data['tweet'].apply(self.get_sentiment_langchain)
+            data.to_csv('data/tweets_labeled.csv', index=False)
+            return {
+                "messages": state["messages"] + [HumanMessage(content=f"Action effectuée par l'agent {self.name}")],
+                "data": 'data/tweets_labeled.csv',
+                "context": state.get("context", {})
+            }

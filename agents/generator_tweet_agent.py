@@ -1,4 +1,5 @@
 import pandas as pd
+import re
 
 from langchain_ollama import OllamaLLM
 from langchain_core.messages import HumanMessage
@@ -59,15 +60,22 @@ class GeneratorTweetAgent:
                 prompt = prompt_template.format(context=context, category=categorie, lang=lang)
                 tweet = self.llm(prompt)
                 print(f"Tweet généré ({categorie}): {tweet}")
-                tweets.append({"tweet": tweet, "sentiment": categorie})
+                tweets.append({"tweet": self._clean_text(tweet), "sentiment": categorie})
         
         # enregistrer les tweets générés dans un fichier CSV
         df_generated = pd.DataFrame(tweets)
         df_generated.to_csv('data/tweets_generated.csv', index=False)
         df = pd.concat([df, df_generated])
-        df.to_csv('data/tweets_dataset.csv', index=False)
-        return 'data/tweets_dataset.csv'
-    
+        df.to_csv('data/tweets_dataset_aug.csv', index=False)
+        return 'data/tweets_dataset_aug.csv'
+
+    def _clean_text(self, text):
+        text = re.sub(r"http[s]?://\S+|www\.\S+", '', text)
+        text = re.sub(r"@\w+|\#\w+", '', text)
+        text = re.sub(r'[^\w\s,]', '', text)
+        text = text.lower()
+        return text
+
     def invoke(self, state):
         self.query = state["context"]
         print(f"Contexte: {self.query}")

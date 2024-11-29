@@ -74,6 +74,6 @@ class DatasetPreparatorAgent:
         df.to_csv('tweets_dataset.csv', index=False)
         return {
             "messages": state["messages"] + [HumanMessage(content=f"Action effectuée par l'agent {self.name}")],
-            "data": 'tweets_dataset.csv',
+            "data": 'data/tweets_dataset.csv',
             "context": state.get("context", {})
         }
