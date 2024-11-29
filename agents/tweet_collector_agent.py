@@ -15,7 +15,7 @@ email = os.getenv("TWITTER_EMAIL")
 password = os.getenv("TWITTER_EMAIL_PASSWORD")
 
 class TweetCollectorAgent:
-    def __init__(self, mode='term', number=10, output_file='data/tweets.json'):
+    def __init__(self, mode='term', number=2, output_file='data/tweets.json'):
         self.name = 'TweetCollectorAgent'
         self.mode = mode
         self.number = number
