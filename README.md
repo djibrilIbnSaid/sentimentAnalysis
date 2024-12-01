@@ -18,8 +18,9 @@ cd SentimentAnalysis
 3. Créez et activez un environnement virtuel :
 ```bash
 python3 -m venv env
-source env/bin/activate  # Sur Windows, utilisez `env\Scripts\activate`
+source env/bin/activate
 ```
+Sur Windows, utilisez `env\Scripts\activate` au lieu de `source env/bin/activate`.
 
 4. Installez les dépendances :
 ```bash
