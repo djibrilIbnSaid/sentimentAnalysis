@@ -9,7 +9,8 @@ class GeneratorTweetAgent:
     def __init__(self):
         self.llm = OllamaLLM(model="llama3.2", verbose=False)
         self.name = 'GeneratorTweetAgent'
-        self.query = None
+       
+       
     
     def _calculer_tweets_a_generer(self, categories):
         """
@@ -31,6 +32,16 @@ class GeneratorTweetAgent:
         return tweets_a_generer
 
     def _generate_tweet(self, context, dataset):
+        """
+        Génère des tweets en fonction du contexte et du dataset fournis.
+
+        Args:
+            context (str): Contexte pour lequel générer les tweets.
+            dataset: Chemin du fichier CSV contenant les données.
+
+        Returns:
+            str: Chemin du fichier CSV contenant les tweets générés.
+        """
         df = pd.read_csv(dataset)
         categories = {
             "POSITIVE": df[df['sentiment'] == 'POSITIVE'].shape[0],
@@ -70,6 +81,15 @@ class GeneratorTweetAgent:
         return 'data/tweets_dataset_aug.csv'
 
     def _clean_text(self, text):
+        """
+        Nettoie le texte en supprimant les URLs, les hashtags, les mentions et la ponctuation.
+
+        Args:
+            text (str): Texte à nettoyer.
+
+        Returns:
+            str: Texte nettoyé.
+        """
         text = re.sub(r"http[s]?://\S+|www\.\S+", '', text)
         text = re.sub(r"@\w+|\#\w+", '', text)
         text = re.sub(r'[^\w\s,]', '', text)
@@ -77,6 +97,15 @@ class GeneratorTweetAgent:
         return text
 
     def invoke(self, state):
+        """
+        Méthode principale pour l'agent
+
+        Args:
+            state: l'état actuel de l'agent
+
+        Returns:
+            dict: l'état mis à jour de l'agent
+        """
         self.query = state["context"]
         print(f"Contexte: {self.query}")
         print(f"Dataset: {state['data']}")

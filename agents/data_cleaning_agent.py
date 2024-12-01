@@ -7,6 +7,16 @@ class DataCleaningAgent:
         self.name = 'DataCleaningAgent'
         
     def invoke(self, state):
+        """
+        Méthode principale pour l'agent
+
+        Args:
+            state: l'état actuel de l'agent
+
+        Returns:
+            dict: l'état mis à jour de l'agent
+        """
+        
         df = pd.read_json(state['data'])
         if df.shape[0] == 0:
             return {
