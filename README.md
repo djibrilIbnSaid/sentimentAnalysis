@@ -38,7 +38,7 @@ pip install -r requirements.txt
 
 Pour utiliser le système de crawling Twitter, créez un fichier `.env` à la racine du projet avec vos identifiants Twitter :
 ```bash
-  cp .env.example .env
+  cp ./.env.exemple .env
 ```
 
 ```env
