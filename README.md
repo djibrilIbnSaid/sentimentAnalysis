@@ -1,67 +1,143 @@
-# SentimentAnalysis
+# Système Multi-Agents d'Analyse de Sentiments
 
 ## Description
-SentimentAnalysis est un projet en Python qui analyse les sentiments exprimés dans des textes (tweets). Il utilise des techniques avec des système multi-agents pour déterminer si un tweet est positif, négatif ou neutre.
+Ce projet implémente un système multi-agents pour l'analyse de sentiments dans les tweets, utilisant différents agents spécialisés pour gérer les diverses étapes du processus d'analyse. Le système analyse les tweets pour déterminer s'ils expriment des sentiments positifs, négatifs ou neutres.
 
 ## Installation
+
 1. Clonez le dépôt :
-    ```bash
-    git clone https://github.com/djibrilIbnSaid/sentimentAnalysis.git
-    ```
+```bash
+git clone https://github.com/djibrilIbnSaid/sentimentAnalysis.git
+```
+
 2. Accédez au répertoire du projet :
-    ```bash
-    cd SentimentAnalysis
-    ```
-3. Créez un environnement virtuel et activez-le :
-    ```bash
-    python3 -m venv env
-    source env/bin/activate  
-    
-    # Sur Windows, utilisez 
-    `env\Scripts\activate`
-    ```
+```bash
+cd SentimentAnalysis
+```
+
+3. Créez et activez un environnement virtuel :
+```bash
+python3 -m venv env
+source env/bin/activate  # Sur Windows, utilisez `env\Scripts\activate`
+```
+
 4. Installez les dépendances :
-    ```bash
-    pip install -r requirements.txt
-    ```
-5. Autres dependances :
-    - installer ollama: https://ollama.com
-    - Pour verifier si ollama est bien installé, executer la commande suivante:
-        - navigateur: http://localhost:11434
-    - bash: `ollama pull llama3.2` pour telecharger le modèle llama3.2
+```bash
+pip install -r requirements.txt
+```
+
+5. Dépendances supplémentaires :
+- Installez Ollama : Visitez https://ollama.com pour les instructions d'installation
+- Vérifiez l'installation d'Ollama en accédant à http://localhost:11434 dans votre navigateur
+- Téléchargez le modèle llama3.2 :
+  ```bash
+  ollama pull llama3.2
+  ```
 
 ## Configuration des Identifiants Twitter
 
-Pour utiliser l'agent `TweetCollectorAgent`, vous devez fournir vos identifiants de connexion Twitter dans un fichier Python. Suivez les étapes ci-dessous pour configurer vos identifiants :
+Pour utiliser le système de crawling Twitter, créez un fichier `.env` à la racine du projet avec vos identifiants Twitter :
+```env
+TWITTER_USERNAME=votre_nom_utilisateur
+TWITTER_ACCOUNT_PASSWORD=votre_mot_de_passe
+TWITTER_EMAIL=votre_email
+TWITTER_EMAIL_PASSWORD=votre_mot_de_passe_email
+```
 
-### Étape 1 : Créer le fichier `.env`
-   ```bash
-   # .env
+## Description des Agents
 
-    TWITTER_USERNAME=....          # Votre nom d'utilisateur Twitter
-    TWITTER_ACCOUNT_PASSWORD=...  # Le mot de passe associé à votre compte Twitter
-    TWITTER_EMAIL=...           # L'adresse email liée à votre compte Twitter
-    TWITTER_EMAIL_PASSWORD=...  
+### 1. HumanAgent (Agent Humain)
+- Objectif : Sert de point d'entrée pour l'interaction utilisateur
+- Fonction : Collecte le contexte et les requêtes des utilisateurs pour initier le workflow d'analyse
+- Entrée : Texte fourni par l'utilisateur via une interaction en ligne de commande
+- Sortie : Informations contextuelles pour les autres agents, formatées dans le state du workflow
 
+### 2. SupervisorAgent (Agent Superviseur)
+- Objectif : Orchestre le workflow entre les différents agents
+- Fonction : Gère la séquence d'exécution des agents et contrôle le flux de travail
+- Entrée : État du système (state) contenant les messages et résultats des agents
+- Sortie : Décision sur le prochain agent à exécuter ou signal de terminaison (FINISH)
+- Particularité : Maintient la cohérence du workflow et assure la transition appropriée entre les agents
 
-## Utilisation
-1. Exécutez le script d'analyse :
-    ```bash
-    python analyze.py
-    ```
-2. Les résultats seront affichés dans la console.
+### 3. TweetCollectorAgent (Agent Collecteur de Tweets)
+- Objectif : Collecte des tweets par crawling direct sur Twitter
+- Fonction : Utilise twscrape pour extraire les tweets correspondant aux critères de recherche
+- Entrée : Requête de recherche et nombre de tweets souhaité
+- Sortie : Fichier JSON contenant les tweets collectés avec leurs métadonnées
+- Particularité : Effectue un crawling direct plutôt qu'une utilisation de l'API Twitter, permettant une collecte plus flexible
 
-## Contribuer
-Les contributions sont les bienvenues ! Veuillez soumettre une pull request ou ouvrir une issue pour discuter des changements que vous souhaitez apporter.
+### 4. DataCleaningAgent (Agent de Nettoyage de Données)
+- Objectif : Prétraite et nettoie les tweets collectés
+- Fonction : Applique diverses opérations de nettoyage sur les tweets
+- Entrée : Fichier JSON contenant les tweets bruts
+- Sortie : Dataset nettoyé au format CSV
+- Opérations : 
+  * Suppression des URLs
+  * Suppression des mentions (@user)
+  * Suppression des caractères spéciaux
+  * Conversion en minuscules
+  * Suppression des doublons
 
-## Licence
-Ce projet est sous licence MIT. Voir le fichier [LICENSE](LICENSE) pour plus de détails.
+### 5. LabelingAgent (Agent d'Étiquetage)
+- Objectif : Attribue des étiquettes de sentiment aux tweets
+- Fonction : Utilise le modèle Llama via Ollama pour l'analyse des sentiments
+- Entrée : Dataset de tweets nettoyés
+- Sortie : Dataset avec étiquettes de sentiment (POSITIVE, NEGATIVE, NEUTRAL)
+- Particularité : Utilise un prompt spécialement conçu pour l'analyse de sentiments en français
 
-## Auteurs
+### 6. GeneratorTweetAgent (Agent Générateur de Tweets)
+- Objectif : Équilibre le dataset en générant des tweets additionnels
+- Fonction : Génère de nouveaux tweets pour les catégories sous-représentées
+- Entrée : Dataset de tweets étiquetés
+- Sortie : Dataset augmenté (tweets_dataset_aug.csv)
+- Fonctionnalités :
+  * Analyse la distribution des sentiments
+  * Calcule le nombre de tweets à générer par catégorie
+  * Utilise Llama pour générer des tweets cohérents
+  * Maintient le contexte et le style des tweets originaux
+
+### 7. ClassifierAgent (Agent de Classification)
+- Objectif : Développe et entraîne un modèle de classification des sentiments
+- Fonction : Implémente un réseau de neurones pour la classification
+- Entrée : Dataset augmenté et équilibré
+- Sortie : Modèle entraîné (tweet_classifier.h5) et tokenizer (tokenizer.pkl)
+- Caractéristiques :
+  * Architecture de réseau neuronal convolutif
+  * Gestion du déséquilibre des classes
+  * Métriques de performance (précision, rappel)
+  * Sauvegarde automatique du meilleur modèle
+
+### 8. TestModelAgent (Agent de Test du Modèle)
+- Objectif : Permet de tester le modèle entraîné
+- Fonction : Interface interactive pour tester de nouveaux tweets
+- Entrée : Tweets fournis par l'utilisateur
+- Sortie : Prédictions de sentiment avec visualisation des probabilités
+- Particularité : Inclut une visualisation graphique des résultats
+
+## Structure des Sorties
+
+Le système génère les fichiers suivants pendant l'exécution :
+- `data/tweets.json` : Tweets collectés par crawling
+- `data/tweets_dataset_clean.csv` : Données de tweets nettoyées
+- `data/tweets_labeled.csv` : Tweets étiquetés avec sentiments
+- `data/tweets_dataset_aug.csv` : Dataset augmenté avec tweets générés
+- `data/tweet_classifier.h5` : Modèle entraîné
+- `data/tokenizer.pkl` : Tokenizer de texte
+
+## Gestion des Erreurs
+
+Le système intègre une gestion robuste des erreurs courantes :
+- Échecs de connexion lors du crawling Twitter
+- Erreurs de traitement des données
+- Problèmes d'entraînement du modèle
+- Formats d'entrée invalides
+- Erreurs de génération de tweets
+
+## Contributeurs
 - Abdoulaye Djibril DIALLO
 - Salma KHALLAD
 - Alexandre ARNAUD
 - Ayoub HIDARA
 
-## Remerciements
-- Merci à toutes les bibliothèques open-source utilisées dans ce projet.
+## Licence
+Ce projet est sous licence MIT - voir le fichier LICENSE pour plus de détails.
