@@ -18,8 +18,9 @@ cd SentimentAnalysis
 3. Créez et activez un environnement virtuel :
 ```bash
 python3 -m venv env
-source env/bin/activate  # Sur Windows, utilisez `env\Scripts\activate`
+source env/bin/activate
 ```
+Sur Windows, utilisez `env\Scripts\activate` au lieu de `source env/bin/activate`.
 
 4. Installez les dépendances :
 ```bash
@@ -37,6 +38,10 @@ pip install -r requirements.txt
 ## Configuration des Identifiants Twitter
 
 Pour utiliser le système de crawling Twitter, créez un fichier `.env` à la racine du projet avec vos identifiants Twitter :
+```bash
+  cp ./.env.exemple .env
+```
+
 ```env
 TWITTER_USERNAME=votre_nom_utilisateur
 TWITTER_ACCOUNT_PASSWORD=votre_mot_de_passe
@@ -44,7 +49,20 @@ TWITTER_EMAIL=votre_email
 TWITTER_EMAIL_PASSWORD=votre_mot_de_passe_email
 ```
 
+## Utilisation
+1. Exécutez le script d'analyse :
+    ```bash
+    python analyze.py
+    ```
+2. Les résultats seront affichés dans la console.
+
 ## Description des Agents
+
+Le système est composé de plusieurs agents spécialisés pour gérer les différentes étapes du processus d'analyse de sentiments. Chaque agent est responsable d'une tâche spécifique et communique avec les autres agents pour coordonner le flux de travail.
+
+![Agents](assets/agents.jpeg)
+
+
 
 ### 1. HumanAgent (Agent Humain)
 - Objectif : Sert de point d'entrée pour l'interaction utilisateur
@@ -65,6 +83,8 @@ TWITTER_EMAIL_PASSWORD=votre_mot_de_passe_email
 - Entrée : Requête de recherche et nombre de tweets souhaité
 - Sortie : Fichier JSON contenant les tweets collectés avec leurs métadonnées
 - Particularité : Effectue un crawling direct plutôt qu'une utilisation de l'API Twitter, permettant une collecte plus flexible
+
+  NB: si le télèchargement échoue, l'agent charge les tweets deja télècharges dans le fichier `data/tweets.json`. Les tweets concernes le sujet "Gouvernement de Michel Barnier".
 
 ### 4. DataCleaningAgent (Agent de Nettoyage de Données)
 - Objectif : Prétraite et nettoie les tweets collectés

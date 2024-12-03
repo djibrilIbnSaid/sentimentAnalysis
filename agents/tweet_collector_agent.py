@@ -26,6 +26,9 @@ class TweetCollectorAgent:
         self.api = API()
 
     async def setup_accounts(self):
+        """
+        Set up Twitter accounts and log in to the API.
+        """
         try:
             # Add accounts and log in
             # await self.api.pool.delete_accounts(username)
@@ -38,6 +41,12 @@ class TweetCollectorAgent:
             raise
 
     async def fetch_tweets(self):
+        """
+        Fetch tweets based on the query and number.
+
+        Returns:
+            List: List of tweets fetched
+        """
         try:
             # Fetch tweets based on the query and number
             tweets = await gather(self.api.search(self.query+" lang:fr", limit=self.number))
@@ -48,6 +57,12 @@ class TweetCollectorAgent:
             raise
 
     async def save_to_json(self, tweets):
+        """
+        Save tweet details to a JSON file.
+
+        Args:
+            tweets: List of tweets to save to JSON
+        """
         try:
             tweets_list = []
             for tweet in tweets:
@@ -106,6 +121,9 @@ class TweetCollectorAgent:
             raise
 
     async def crawl_tweets(self):
+        """
+        Crawl tweets based on the query and number.
+        """
         try:
             # Set up logging, accounts, and fetch/save tweets
             set_log_level("DEBUG")
@@ -117,6 +135,16 @@ class TweetCollectorAgent:
             raise
 
     def invoke(self, state):
+        """
+        Méthode principale pour l'agent
+
+        Args:
+            state: l'état actuel de l'agent
+
+        Returns:
+            dict: l'état mis à jour de l'agent
+        """
+        
         try:
             # Get query from the state
             self.query = state.get("context", "")  # Query can be passed via state

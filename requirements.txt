@@ -13,4 +13,9 @@ python-dotenv==1.0.1
 pandas==2.2.3
 numpy==1.26.4
 ollama==0.3.3
-python-dotenv==1.0.1
+nltk==3.9.1
+nest-asyncio==1.6.0
+ntscraper==0.3.17
+scikit-learn==1.5.2
+tensorflow==2.16.2
+twscrape==0.14

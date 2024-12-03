@@ -5,10 +5,15 @@ class HumanAgent:
         self.name = 'HumanAgent'
     
     def invoke(self, state):
-        """Ajoute du contexte fourni par un utilisateur humain dans le workflow."""
-        # Simuler une interaction où l'humain fournit le contexte
-        # Dans un cadre réel, cela pourrait être une interaction utilisateur
-        # ou un champ de texte dans une interface.
+        """
+        Méthode principale pour l'agent
+
+        Args:
+            state: l'état actuel de l'agent
+
+        Returns:
+            dict: l'état mis à jour de l'agent
+        """
         text = input("Entrez le contexte: ")
         return {
             "messages": [

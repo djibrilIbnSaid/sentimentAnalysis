@@ -5,6 +5,16 @@ class TestModelAgent:
         self.name = 'TestModelAgent'
     
     def invoke(self, state):
+        """
+        Méthode principale pour l'agent
+
+        Args:
+            state: l'état actuel de l'agent
+
+        Returns:
+            dict: l'état mis à jour de l'agent
+        """
+        
         model_path = state["context"]["model_path"]
         tokenizer_path = state["context"]["tokenizer_path"]
         emotions = {-1:'NEGATIVE', 0: 'NEUTRE', 1: 'POSITIVE'}

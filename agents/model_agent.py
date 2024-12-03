@@ -17,6 +17,16 @@ class ModelAgent:
         self.models_dir.mkdir(exist_ok=True)
         
     def invoke(self, state):
+        """
+        Méthode principale pour l'agent
+
+        Args:
+            state: l'état actuel de l'agent
+
+        Returns:
+            dict: l'état mis à jour de l'agent
+        """
+        
         dataset = pd.read_csv(state['data'])
 
         # Séparation des données en X et y

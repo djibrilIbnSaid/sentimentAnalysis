@@ -33,6 +33,15 @@ class ClassifierAgent:
         self.name = 'ClassifierAgent'
 
     def clean_and_prepare_data(self,file_path):
+        """
+        Nettoyer et préparer les données pour l'entraînement du modèle.
+
+        Args:
+            file_path (str): Chemin du fichier CSV contenant les données.
+
+        Returns:
+            Tuple: X (features), y (labels).
+        """
         df = pd.read_csv(file_path)
         df['sentiment'] = df['sentiment'].replace({
             'POSITIVE': 1,
@@ -88,7 +97,16 @@ class ClassifierAgent:
         return X, y
 
     def detect_imbalance(self, y, threshold=0.2):
-        """Détecter les déséquilibres dans les données."""
+        """
+        Détecter les déséquilibres dans les données.
+
+        Args:
+            y (int): les labels.
+            threshold (float, optional): _description_. Defaults to 0.2.
+
+        Returns:
+            str: Message d'avertissement sur les déséquilibres.
+        """
         label_counts = pd.Series(y).value_counts(normalize=True)
         imbalance_message = ""
         for label, proportion in label_counts.items():
@@ -99,6 +117,16 @@ class ClassifierAgent:
         return imbalance_message if imbalance_message else None
     
     def main_pipeline(self,X,y):
+        """
+        Entraîner un modèle de classification de texte.
+
+        Args:
+            X : les features
+            y : les labels
+
+        Returns:
+            Tuple: Chemin du modèle et du tokenizer.
+        """
 
         # Diviser les données
         X_train, X_temp, y_train, y_temp = train_test_split(X, y, test_size=0.3, random_state=42)
@@ -186,6 +214,15 @@ class ClassifierAgent:
         
 
     def invoke(self, state):
+        """
+        Méthode principale pour l'agent
+
+        Args:
+            state: l'état actuel de l'agent
+
+        Returns:
+            dict: l'état mis à jour de l'agent
+        """
         
         X,y = self.clean_and_prepare_data(state["data"])
         # Détection de déséquilibres

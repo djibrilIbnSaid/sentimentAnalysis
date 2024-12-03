@@ -28,6 +28,17 @@ class SupervisorAgent:
     
     @staticmethod
     def agent_node(state, agent, name):
+        """
+        Ajoute un noeud d'agent à l'état du workflow.
+
+        Args:
+            state: l'état actuel du workflow
+            agent: l'agent à invoquer
+            name (str): le nom de l'agent
+
+        Returns:
+            state: l'état mis à jour du workflow
+        """
         result = agent.invoke(state)
         print("--------------------")
         print(result)
@@ -40,6 +51,15 @@ class SupervisorAgent:
     
     @staticmethod
     def supervisor_decision(x):
+        """
+        
+
+        Args:
+            x (_type_): _description_
+
+        Returns:
+            _type_: _description_
+        """
         try:
             return x["next"]
         except KeyError:
@@ -47,6 +67,16 @@ class SupervisorAgent:
             return "FINISH"
     
     def supervisor_agent(self, state):
+        """
+        Le superviseur prend une décision sur le prochain agent à invoquer.
+
+        Args:
+            state: l'état actuel du workflow
+
+        Returns:
+            state: l'état mis à jour du workflow
+        """
+        
         choices = self.members[1:] + ["FINISH"]
         current_index = state.get("current_index", 0)
         decision = choices[current_index]
@@ -61,6 +91,12 @@ class SupervisorAgent:
         }
     
     def conditional_map(self):
+        """
+        Verifie les agents disponibles pour le superviseur.
+
+        Returns:
+            List: Liste des agents disponibles pour le superviseur.
+        """
         conditional_map = {k: k for k in self.members}
         conditional_map["FINISH"] = END 
         return conditional_map
